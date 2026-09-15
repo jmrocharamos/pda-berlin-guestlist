@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import './globals.css';
+import './themes.css';
 
 const geistSans = Geist({
   variable: '--font-geist-sans',
@@ -13,9 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'PDA Door — Guestlist Control',
-  description: 'Private door and guestlist operations for PDA Berlin.',
-  openGraph: { title: 'PDA Door — Guestlist Control', description: 'Private door and guestlist operations for PDA Berlin.', images: ['https://i1.sndcdn.com/visuals-001230232354-GC1Lze-t2480x520.jpg'] },
+  icons: { icon: '/pda-logo.jpg', apple: '/pda-logo.jpg' },
+  title: 'PDA Berlin — Guestlist',
+  description: 'A simple, private space for guestlist and door management at PDA events.',
+  openGraph: { title: 'PDA Berlin — Guestlist', description: 'A simple, private space for guestlist and door management at PDA events.', images: ['https://i1.sndcdn.com/visuals-001230232354-GC1Lze-t2480x520.jpg'] },
 };
 
 export default function RootLayout({

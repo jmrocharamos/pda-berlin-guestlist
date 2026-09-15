@@ -1,0 +1,52 @@
+.app-shell {
+  --ink:#150a1b; --paper:#fff2f7; --acid:#f564af; --wine:#25122c; --line:#4c2d55; --muted:#c4a7c4;
+  --panel:#25122c; --panel2:#1c0e23; --button-ink:#270c1d; --secondary:#bd91ff; --success:#f6e75a; --danger:#ff9baf; --radius:12px;
+  background:var(--ink); color:var(--paper); color-scheme:dark;
+}
+.app-shell[data-theme=basement] { --ink:#171015;--paper:#fff0f4;--acid:#ff4d93;--wine:#27151f;--line:#68304e;--muted:#d5a7bb;--panel:#27151f;--panel2:#201018;--button-ink:#240b17;--secondary:#ffb9d4;--success:#eaff57;--radius:0px; }
+.app-shell[data-theme=velvet] { --ink:#201633;--paper:#faf0ff;--acid:#ceafff;--wine:#302344;--line:#564166;--muted:#c3aed7;--panel:#302344;--panel2:#281d3b;--button-ink:#2c1942;--secondary:#f0afcc;--success:#e8d3ff;--radius:20px; }
+.app-shell[data-theme=daylight] { --ink:#f7dce9;--paper:#412144;--acid:#6834a2;--wine:#edccdf;--line:#d6a8c5;--muted:#795673;--panel:#fff4f9;--panel2:#edccdf;--button-ink:#fff6ff;--secondary:#a02966;--success:#653c91;--danger:#a31c48;--radius:9px;color-scheme:light; }
+.topbar,.entry-overview { background:var(--panel2); }
+.guest-row,.gate-card,.modal-card { background:var(--panel);border-color:var(--line);border-radius:var(--radius); }
+.guest-row { overflow:hidden; }
+.app-shell button,.app-shell input,.app-shell select,.search-box,.entry-overview { border-radius:var(--radius); }
+.brand-mark {border-color:var(--line)}
+.counter-actions button,.row-actions button,.role-grid button,.settings-action,.import-mode button,.drop-zone,.list-settings>div,.nav-item b { background:var(--panel2);border-color:var(--line);color:var(--paper); }
+.counter-actions button:first-child,.row-actions .check-one,.import-button.primary,.gate-submit,.role-grid button.selected,.capacity-control button {background:var(--acid);color:var(--button-ink);border-color:var(--acid)}
+.counter-card strong,.complete,.slot-progress i.filled {color:var(--success)}
+.slot-progress i.filled,.live-dot,.type-guestlist .type-rail {background:var(--success)}
+.live-dot {box-shadow:none}.type-solid-list .type-rail {background:var(--secondary)}.type-skip-list .type-rail {background:var(--muted)}
+.type-rail,.slot-progress i,.overview-stat i {background:var(--line)}
+.overview-stat i b {background:var(--muted)}.overview-stat i b.free{background:var(--success)}.overview-stat i b.soli{background:var(--secondary)}
+.nav-item,.shift-note p,.shift-note small,.sync-state,.filter-row button,.guest-identity p,.slot-progress>span,.privacy-note,.modal-copy,.drop-zone span,.import-summary>div,.import-mode button small,.settings-section h3,.settings-action small,.list-settings small,.gate-card label,.modal-card label,.gate-card label small,.modal-close {color:var(--muted)}
+.nav-item.active {background:var(--panel);color:var(--acid)}
+.guest-identity p span,.empty-state h2 {color:var(--secondary)}
+.guest-identity p {text-transform:none;letter-spacing:0}
+.search-box {background:var(--panel);color:var(--paper);border:1px solid var(--line)}
+.search-box input {color:var(--paper)}.search-box input::placeholder{color:var(--muted)}.search-box kbd{color:var(--muted);border-color:var(--line)}
+.filter-row {gap:6px;padding:10px 0}.filter-row button{padding:10px 14px;min-height:44px}.filter-row button.selected{background:var(--acid);color:var(--button-ink);border-bottom-color:transparent}
+.import-button,.import-summary,.empty-state {border-color:var(--line)}.empty-state{color:var(--muted)}
+.gate-card input,.modal-card input:not([type=checkbox]),.modal-card select {background:var(--ink);border-color:var(--line);color:var(--paper)}
+.import-mode button.selected,.form-success{background:var(--panel2);border-color:var(--acid)}
+.import-mode button.selected.danger,.settings-action.danger,.list-settings button {background:var(--panel2);border-color:var(--danger);color:var(--danger)}
+.import-mode button.selected.danger strong,.form-error{color:var(--danger)}.form-error{background:var(--panel2);border:1px solid var(--danger)}
+.gate-card label,.modal-card label,.privacy-note,.modal-copy,.shift-note p,.shift-note small,.settings-action small,.list-settings small,.import-mode button small{font-size:13px;letter-spacing:0;line-height:1.5}
+.gate-card h2,.modal-card h2{line-height:1.15}.eyebrow,.panel-heading p{font-size:12px;letter-spacing:.08em}.complete{letter-spacing:0}
+.header-tools{justify-self:end;display:flex;align-items:center;gap:12px;min-width:0}
+.theme-picker{display:flex;gap:6px;align-items:center;font-size:12px;color:var(--muted)}
+.theme-picker select{height:44px;max-width:170px;padding:8px 10px;border:1px solid var(--line);background:var(--panel);color:var(--paper);font-size:14px;cursor:pointer}
+.gate-card .theme-picker{display:flex;align-items:center;justify-content:space-between;margin:0 0 24px;font-size:14px}.gate-card .theme-picker select{max-width:220px}
+.app-shell :is(button,input,select):focus-visible{outline:2px solid var(--secondary);outline-offset:3px}
+[data-theme=basement] .panel-heading h1{font-weight:900;text-transform:uppercase;letter-spacing:-.05em}
+[data-theme=basement] .topbar{border-bottom:3px solid var(--acid)}
+[data-theme=velvet] :is(.panel-heading h1,.gate-card h2,.modal-card h2){font-family:Georgia,serif;font-weight:400}
+[data-theme=daylight] .topbar{background:#412144;color:#fff2f9}
+[data-theme=daylight] .topbar :is(.theme-picker,.brand-lockup span,.event-title span){color:#e4c4e4}
+[data-theme=daylight] .topbar .live-dot{background:#f5bade}
+@media(max-width:1100px){.topbar{grid-template-columns:1fr auto}.event-title{display:none}}
+@media(max-width:600px){
+ .topbar{padding:0 10px}.header-tools{gap:6px}.header-tools .theme-picker>span{display:none}.header-tools .theme-picker select{width:126px;padding:7px;font-size:12px}.profile-button{padding:8px;max-width:92px;font-size:9px;letter-spacing:0}.brand-lockup span{display:none}.brand-lockup{gap:6px}.brand-mark{width:33px;height:33px}.brand-lockup strong{font-size:11px;letter-spacing:.06em}
+ .panel-heading{flex-wrap:wrap}.panel-heading>div:first-child{flex:1 1 100%}.heading-actions{width:100%;justify-content:flex-end}.panel-heading h1{font-size:27px}
+ .gate-card,.modal-card{border-radius:var(--radius) var(--radius) 0 0}.gate-card .theme-picker select{font-size:16px}
+ .search-box{box-shadow:0 5px 15px #0002}.import-summary,.drop-zone,.list-settings strong{overflow-wrap:anywhere}.list-settings span{min-width:0}.list-settings button{flex-shrink:0}
+}
