@@ -1,3 +1,4 @@
+import { isStaffRole, staffRoles } from '../lib/staff-roles';
 import { neon } from '@neondatabase/serverless';
 
 const statements = [
@@ -52,14 +53,21 @@ const database = {
   },
 };
 
-export async function ensureDatabase() {
+let initialization: Promise<void> | undefined;
+
+async function initializeDatabase() {
   for (const statement of statements) await prepare(statement).run();
   const now = new Date().toISOString();
   await prepare(`INSERT INTO event_state (id, title, venue, capacity, inside, out_count, updated_at) VALUES (1, 'Public Display of Affection', 'Berlin', 550, 0, 0, ?) ON CONFLICT (id) DO NOTHING`).bind(now).run();
   await prepare(`UPDATE event_state SET normal_entries = GREATEST(0, inside + out_count - COALESCE((SELECT SUM(checked_in) FROM guests), 0)), entry_stats_ready = TRUE WHERE id = 1 AND entry_stats_ready = FALSE`).run();
+}
+
+export async function ensureDatabase() {
+  initialization ??= initializeDatabase().catch((error) => { initialization = undefined; throw error; });
+  await initialization;
   return database;
 }
 export async function sha256(value: string) { const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)); return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join(''); }
 export async function hashPin(pin: string, salt: string) { return sha256(`${salt}:${pin}`); }
-export async function getSession(request: Request) { const token = (request.headers.get('cookie') ?? '').match(/(?:^|;\s*)pda_session=([^;]+)/)?.[1]; if (!token) return null; const db = await ensureDatabase(); const row = await db.prepare(`SELECT staff_sessions.role_key, staff_roles.permissions FROM staff_sessions JOIN staff_roles ON staff_roles.role_key = staff_sessions.role_key WHERE token_hash = ? AND expires_at > ?`).bind(await sha256(token), new Date().toISOString()).first<{ role_key: string; permissions: string }>(); return row ? { role: row.role_key, permissions: JSON.parse(row.permissions) as string[] } : null; }
+export async function getSession(request: Request) { const token = (request.headers.get('cookie') ?? '').match(/(?:^|;\s*)pda_session=([^;]+)/)?.[1]; if (!token) return null; const db = await ensureDatabase(); const row = await db.prepare(`SELECT role_key FROM staff_sessions WHERE token_hash = ? AND expires_at > ?`).bind(await sha256(token), new Date().toISOString()).first<{ role_key: string; permissions: string }>(); return row && isStaffRole(row.role_key) ? { role: row.role_key, permissions: [...staffRoles[row.role_key].permissions] } : null; }
 export function json(data: unknown, status = 200, headers?: HeadersInit) { return new Response(JSON.stringify(data), { status, headers: { 'content-type': 'application/json', ...headers } }); }
