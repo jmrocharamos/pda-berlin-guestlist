@@ -5,6 +5,8 @@ const statements = [
   `CREATE INDEX IF NOT EXISTS idx_guests_normalized_name ON guests(normalized_name)`,
   `CREATE INDEX IF NOT EXISTS idx_guests_guest_type ON guests(guest_type)`,
   `CREATE TABLE IF NOT EXISTS event_state (id INTEGER PRIMARY KEY, title TEXT NOT NULL, venue TEXT NOT NULL, capacity INTEGER NOT NULL DEFAULT 550, inside INTEGER NOT NULL DEFAULT 0, out_count INTEGER NOT NULL DEFAULT 0, updated_at TEXT NOT NULL)`,
+  `ALTER TABLE event_state ADD COLUMN IF NOT EXISTS normal_entries INTEGER NOT NULL DEFAULT 0`,
+  `ALTER TABLE event_state ADD COLUMN IF NOT EXISTS entry_stats_ready BOOLEAN NOT NULL DEFAULT FALSE`,
   `CREATE TABLE IF NOT EXISTS staff_roles (id SERIAL PRIMARY KEY, role_key TEXT NOT NULL UNIQUE, display_name TEXT NOT NULL, pin_salt TEXT NOT NULL, pin_hash TEXT NOT NULL, permissions TEXT NOT NULL)`,
   `CREATE TABLE IF NOT EXISTS staff_sessions (token_hash TEXT PRIMARY KEY, role_key TEXT NOT NULL, expires_at TEXT NOT NULL, created_by TEXT)`,
   `CREATE INDEX IF NOT EXISTS idx_staff_sessions_expiry ON staff_sessions(expires_at)`,
@@ -54,6 +56,7 @@ export async function ensureDatabase() {
   for (const statement of statements) await prepare(statement).run();
   const now = new Date().toISOString();
   await prepare(`INSERT INTO event_state (id, title, venue, capacity, inside, out_count, updated_at) VALUES (1, 'Public Display of Affection', 'Berlin', 550, 0, 0, ?) ON CONFLICT (id) DO NOTHING`).bind(now).run();
+  await prepare(`UPDATE event_state SET normal_entries = GREATEST(0, inside + out_count - COALESCE((SELECT SUM(checked_in) FROM guests), 0)), entry_stats_ready = TRUE WHERE id = 1 AND entry_stats_ready = FALSE`).run();
   return database;
 }
 export async function sha256(value: string) { const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(value)); return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, '0')).join(''); }
