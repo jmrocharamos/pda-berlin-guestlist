@@ -76,3 +76,16 @@ button:disabled { opacity:.4; cursor:not-allowed; }
   .counter-main { padding-inline:10px; }.counter-actions button { min-width:58px; }
   .guest-panel { padding-inline:8px; }.overview-stat { padding-inline:7px; }
 }
+.control-strip .capacity-metric{display:flex;min-width:0}
+.capacity-metric>span{font-size:14px;letter-spacing:.06em}
+.capacity-metric>strong{font-size:42px;line-height:1.1;font-variant-numeric:tabular-nums}
+.capacity-metric>small{font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+.capacity-fill{height:6px;width:100%;margin-top:12px;background:var(--line);border-radius:4px;overflow:hidden}
+.capacity-fill i{display:block;height:100%;background:var(--acid);border-radius:inherit}
+@media(max-width:900px){
+  .control-strip{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .control-strip .counter-main{grid-column:1/-1;order:0}
+  .control-strip .capacity-metric{grid-column:1/-1;order:1;padding:16px 20px;border-top:1px solid var(--line)}
+  .control-strip>.metric:not(.capacity-metric){order:2}
+  .capacity-metric>strong{font-size:42px}
+}
