@@ -24,6 +24,9 @@ export async function prepareDoorPhoto(file: File): Promise<string> {
     if (!context) throw new Error('Photo processing is unavailable in this browser.');
     context.fillStyle = '#ffffff'; context.fillRect(0, 0, canvas.width, canvas.height);
     context.drawImage(image, 0, 0, canvas.width, canvas.height);
-    return canvas.toDataURL('image/jpeg', 0.82);
+    let result = canvas.toDataURL('image/jpeg', 0.82);
+    for (const quality of [0.7, 0.55, 0.4]) { if (result.length <= 650_000) break; result = canvas.toDataURL('image/jpeg', quality); }
+    if (result.length > 650_000) throw new Error('Please choose a smaller copy of this photo.');
+    return result;
   } finally { URL.revokeObjectURL(url); }
 }

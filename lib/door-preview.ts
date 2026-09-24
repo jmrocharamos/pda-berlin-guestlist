@@ -1,13 +1,12 @@
-// Pure, replayable rules for the isolated door-workflow preview.
-// This module does not read or write the live guestlist database.
+// Shared pure, replayable rules for the live door workflow and isolated preview.
 export const doorRoles = ['Downstairs (Queue)', 'Picker', 'Kasse', 'Awareness', 'Club Manager', 'Manager', 'Admin'] as const;
 export type DoorRole = typeof doorRoles[number];
 export type DoorAction = 'check' | 'refuse' | 'reverse' | 'note';
 export type DoorEvent = { id: string; personId: string; action: DoorAction; role: DoorRole; staff: string; note: string; at: string; undoneBy?: { staff: string; role: DoorRole; at: string } };
 export type Person = { id: string; label: string; events: DoorEvent[] };
-export type Party = { id: string; name: string; group: string; host: string; people: Person[] };
+export type Party = { id: string; name: string; group: string; host: string; note?: string; people: Person[] };
 export type BanNote = { text: string; staff: string; role: DoorRole; at: string };
-export type BanRecord = { id: string; name: string; photos: string[]; notes: BanNote[]; staff: string; role: DoorRole; at: string };
+export type BanRecord = { id: string; name: string; photos: string[]; notes: BanNote[]; staff: string; role: DoorRole; at: string; version?: number };
 
 export function personState(person: Person) {
   let status: 'waiting' | 'inside' | 'refused' = 'waiting';
