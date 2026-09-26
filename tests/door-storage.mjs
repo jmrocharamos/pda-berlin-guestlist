@@ -8,6 +8,7 @@ if (!process.env.DATABASE_URL || process.env.DATABASE_URL === '[SENSITIVE]') thr
 const sql = neon(process.env.DATABASE_URL);
 const door = readFileSync(new URL('../app/api/door/route.ts', import.meta.url), 'utf8').match(/db\.prepare\(`(WITH changed AS[\s\S]*?)`\)/)[1];
 const banned = readFileSync(new URL('../app/api/banned/route.ts', import.meta.url), 'utf8').match(/db\.prepare\(`(WITH saved AS[\s\S]*?)`\)/)[1];
+const archive = readFileSync(new URL('../app/api/banned/route.ts', import.meta.url), 'utf8').match(/db\.prepare\(`(UPDATE door_bans[\s\S]*?)`\)/)[1];
 const query = (source, values = []) => { let n = 0; return sql.query(source.replace(/\?/g, () => '$' + ++n), values); };
 const check = (version, checked, delta) => query(door, ['[]', checked, 'test', 1, version, delta, 'test', 'test', 'fixture only', 'picker', 'test']);
 const results = await sql.transaction([
@@ -25,9 +26,16 @@ const results = await sql.transaction([
   query(banned, ['fixture', '{"name":"Sample"}', -1, '[{"id":"photo","jpeg":"fixture"}]']),
   query(banned, ['fixture', '{"name":"Updated"}', 0, '[]']),
   query(banned, ['fixture', '{"name":"Stale overwrite"}', 0, '[]']),
+  query(archive, ['{"name":"Updated","archived":true}', 'fixture', 1]),
+  query(archive, ['{"name":"Stale archive"}', 'fixture', 1]),
+  query("SELECT record->>'archived' AS archived, version FROM door_bans"),
+  query(archive, ['{"name":"Updated","archived":false}', 'fixture', 2]),
   query("SELECT (SELECT inside FROM event_state) AS inside, (SELECT door_version FROM guests) AS version, (SELECT COUNT(*)::int FROM activity) AS actions, (SELECT record->>'name' FROM door_bans) AS name, (SELECT COUNT(*)::int FROM door_photos) AS photos"),
 ]);
 assert.equal(results[8].length, 0, 'stale admission must not double count');
 assert.equal(results[13].length, 0, 'stale directory edit must not overwrite');
+assert.equal(results[15].length, 0, 'stale archive must not overwrite');
+assert.deepEqual(results[16][0], { archived: 'true', version: 2 });
+assert.equal(results[17].length, 1, 'restore succeeds with current version');
 assert.deepEqual(results.at(-1)[0], { inside: 10, version: 3, actions: 3, name: 'Updated', photos: 1 });
 console.log('Atomic admission, stale-write protection, refusal delta, private photo storage: passed. Temporary tables dropped.');

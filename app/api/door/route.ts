@@ -2,6 +2,8 @@ import { ensureDatabase, getSession, json } from '../../../db/runtime';
 import { guestParty, type DoorGuest } from '../../../lib/door-live';
 import { applyDoorAction, personState, undoDoorAction, type DoorAction, type DoorEvent, type DoorRole } from '../../../lib/door-preview';
 import { staffRoles } from '../../../lib/staff-roles';
+import { canArchiveBan } from '../../../lib/ban-archive';
+import type { BanRecord } from '../../../lib/door-preview';
 
 export async function GET(request: Request) {
   const session = await getSession(request);
@@ -9,10 +11,10 @@ export async function GET(request: Request) {
   const db = await ensureDatabase();
   const [guests, bans, event] = await Promise.all([
     db.prepare('SELECT * FROM guests ORDER BY id DESC').all<DoorGuest>(),
-    db.prepare('SELECT record, version FROM door_bans ORDER BY id DESC').all<{ record: object; version: number }>(),
+    db.prepare('SELECT record, version FROM door_bans ORDER BY id DESC').all<{ record: BanRecord; version: number }>(),
     db.prepare('SELECT * FROM event_state WHERE id = 1').first(),
   ]);
-  return json({ parties: guests.results.map(guestParty), bans: bans.results.map(row => ({ ...row.record, version: row.version })), event, session });
+  return json({ parties: guests.results.map(guestParty), bans: bans.results.filter(row => !row.record.archived || canArchiveBan(session.role)).map(row => ({ ...row.record, version: row.version })), event, session });
 }
 
 export async function POST(request: Request) {

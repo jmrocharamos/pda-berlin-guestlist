@@ -6,7 +6,7 @@ export type DoorEvent = { id: string; personId: string; action: DoorAction; role
 export type Person = { id: string; label: string; events: DoorEvent[] };
 export type Party = { id: string; name: string; group: string; host: string; note?: string; people: Person[] };
 export type BanNote = { text: string; staff: string; role: DoorRole; at: string };
-export type BanRecord = { id: string; name: string; photos: string[]; notes: BanNote[]; staff: string; role: DoorRole; at: string; version?: number };
+export type BanRecord = { id: string; name: string; photos: string[]; notes: BanNote[]; staff: string; role: DoorRole; at: string; version?: number; archived?: boolean; archiveHistory?: { action: 'archive' | 'restore'; staff: string; role: DoorRole; at: string }[] };
 
 export function personState(person: Person) {
   let status: 'waiting' | 'inside' | 'refused' = 'waiting';

@@ -1,5 +1,6 @@
 import { ensureDatabase, getSession, json } from '../../../db/runtime';
 import { staffRoles } from '../../../lib/staff-roles';
+import { canArchiveBan, changeBanArchive } from '../../../lib/ban-archive';
 import type { BanRecord, DoorRole } from '../../../lib/door-preview';
 
 export async function POST(request: Request) {
@@ -11,6 +12,20 @@ export async function POST(request: Request) {
   if (raw.length > 3_000_000) return json({ error: 'Photos are too large. Please choose smaller copies.' }, 413);
   let body;
   try { body = JSON.parse(raw); if (!body || typeof body !== 'object') throw new Error(); } catch { return json({ error: 'Invalid record' }, 400); }
+  if (body.action === 'archive' || body.action === 'restore') {
+    if (!canArchiveBan(session.role)) return json({ error: 'Only Admin and Manager can archive or restore records.' }, 403);
+    if (typeof body.id !== 'string' || !/^[a-f0-9-]{36}$/i.test(body.id) || !Number.isSafeInteger(body.version) || body.version < 0) return json({ error: 'Invalid record' }, 400);
+    const db = await ensureDatabase();
+    const existing = await db.prepare('SELECT record, version FROM door_bans WHERE id = ?').bind(body.id).first<{ record: BanRecord; version: number }>();
+    if (!existing) return json({ error: 'Record no longer exists.' }, 404);
+    if (body.version !== existing.version) return json({ error: 'Someone updated this record. Close it and reopen before continuing.' }, 409);
+    const record = changeBanArchive(existing.record, body.action, { staff: session.staff, role: staffRoles[session.role].label as DoorRole, at: new Date().toISOString() });
+    if (record === existing.record) return json({ ok: true });
+    const saved = await db.prepare(`UPDATE door_bans SET record = ?::jsonb, version = version + 1 WHERE id = ? AND version = ? RETURNING id`).bind(JSON.stringify(record), body.id, existing.version).first();
+    if (!saved) return json({ error: 'This record changed. Close it and reopen before continuing.' }, 409);
+    return json({ ok: true });
+  }
+  if (body.action !== undefined) return json({ error: 'Invalid action' }, 400);
   const name = typeof body.name === 'string' ? body.name.trim() : '';
   const note = typeof body.note === 'string' ? body.note.trim() : '';
   const id = body.id || body.requestId;
@@ -19,6 +34,7 @@ export async function POST(request: Request) {
   const existing = await db.prepare('SELECT record, version FROM door_bans WHERE id = ?').bind(id).first<{ record: BanRecord; version: number }>();
   if (body.id && !existing) return json({ error: 'Record no longer exists.' }, 404);
   if (existing && !body.id) return json({ ok: true });
+  if (existing?.record.archived) return json({ error: 'This record is archived. An Admin or Manager must restore it before editing.' }, 409);
   if (existing && body.version !== existing.version) return json({ error: 'Someone updated this record. Close it and reopen before saving.' }, 409);
   const additions: { id: string; jpeg: string }[] = [];
   const photos: string[] = [];
