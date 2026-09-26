@@ -1,11 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 // @ts-ignore Node's native test runner uses explicit TypeScript extensions.
-import { canArchiveBan, changeBanArchive } from '../lib/ban-archive.ts';
+import { canArchiveBan, canDeleteBan, changeBanArchive } from '../lib/ban-archive.ts';
 
 test('only Admin and Manager can archive or restore', () => {
   for (const role of ['admin', 'manager']) assert.equal(canArchiveBan(role), true);
   for (const role of ['club-manager', 'kasse', 'picker', 'awareness', 'downstairs', '', 'unknown']) assert.equal(canArchiveBan(role), false);
+});
+
+test('permanent deletion requires both an authorised role and an archived record', () => {
+  const active = { id: 'sample', name: 'Test', photos: [], notes: [], staff: 'A', role: 'Admin' as const, at: 'before' };
+  assert.equal(canDeleteBan('admin', active), false);
+  assert.equal(canDeleteBan('manager', { ...active, archived: true }), true);
+  assert.equal(canDeleteBan('picker', { ...active, archived: true }), false);
 });
 
 test('archive and restore preserve photos, notes and an attributed history', () => {

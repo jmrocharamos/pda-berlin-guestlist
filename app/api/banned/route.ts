@@ -1,6 +1,6 @@
 import { ensureDatabase, getSession, json } from '../../../db/runtime';
 import { staffRoles } from '../../../lib/staff-roles';
-import { canArchiveBan, changeBanArchive } from '../../../lib/ban-archive';
+import { canArchiveBan, canDeleteBan, changeBanArchive } from '../../../lib/ban-archive';
 import type { BanRecord, DoorRole } from '../../../lib/door-preview';
 
 export async function POST(request: Request) {
@@ -12,13 +12,19 @@ export async function POST(request: Request) {
   if (raw.length > 3_000_000) return json({ error: 'Photos are too large. Please choose smaller copies.' }, 413);
   let body;
   try { body = JSON.parse(raw); if (!body || typeof body !== 'object') throw new Error(); } catch { return json({ error: 'Invalid record' }, 400); }
-  if (body.action === 'archive' || body.action === 'restore') {
-    if (!canArchiveBan(session.role)) return json({ error: 'Only Admin and Manager can archive or restore records.' }, 403);
+  if (body.action === 'archive' || body.action === 'restore' || body.action === 'delete') {
+    if (!canArchiveBan(session.role)) return json({ error: 'Only Admin and Manager can manage archived records.' }, 403);
     if (typeof body.id !== 'string' || !/^[a-f0-9-]{36}$/i.test(body.id) || !Number.isSafeInteger(body.version) || body.version < 0) return json({ error: 'Invalid record' }, 400);
     const db = await ensureDatabase();
     const existing = await db.prepare('SELECT record, version FROM door_bans WHERE id = ?').bind(body.id).first<{ record: BanRecord; version: number }>();
     if (!existing) return json({ error: 'Record no longer exists.' }, 404);
     if (body.version !== existing.version) return json({ error: 'Someone updated this record. Close it and reopen before continuing.' }, 409);
+    if (body.action === 'delete') {
+      if (!canDeleteBan(session.role, existing.record)) return json({ error: 'Archive this record before deleting it permanently.' }, 409);
+      const removed = await db.prepare('DELETE FROM door_bans WHERE id = ? AND version = ? RETURNING id').bind(body.id, existing.version).first();
+      if (!removed) return json({ error: 'This record changed. Close it and reopen before continuing.' }, 409);
+      return json({ ok: true });
+    }
     const record = changeBanArchive(existing.record, body.action, { staff: session.staff, role: staffRoles[session.role].label as DoorRole, at: new Date().toISOString() });
     if (record === existing.record) return json({ ok: true });
     const saved = await db.prepare(`UPDATE door_bans SET record = ?::jsonb, version = version + 1 WHERE id = ? AND version = ? RETURNING id`).bind(JSON.stringify(record), body.id, existing.version).first();
