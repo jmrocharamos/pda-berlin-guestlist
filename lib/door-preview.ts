@@ -35,6 +35,9 @@ export function undoDoorAction(person: Person, id: string, by: NonNullable<DoorE
 
 export function admissionCount(parties: Party[]) { return parties.reduce((sum, party) => sum + party.people.filter((person) => personState(person).status === 'inside').length, 0); }
 
+const guestNameCollator = new Intl.Collator('en', { sensitivity: 'base', numeric: true });
+export function sortPartiesAlphabetically(parties: Party[]) { return [...parties].sort((a, b) => guestNameCollator.compare(a.name.trim(), b.name.trim())); }
+
 export function sampleParties(): Party[] {
   return [
     { id: 'alex', name: 'Alex Rivera', group: 'Guestlist', host: 'PDA', people: [{ id: 'alex-0', label: 'Alex Rivera', events: [] }, { id: 'alex-1', label: '+1 · Guest 1', events: [] }, { id: 'alex-2', label: '+1 · Guest 2', events: [] }] },

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 // @ts-ignore Node's strip-types runner loads the explicit TypeScript extension.
-import { admissionCount, applyDoorAction, personState, sampleParties, undoDoorAction, doorRoles } from '../lib/door-preview.ts';
+import { admissionCount, applyDoorAction, personState, sampleParties, sortPartiesAlphabetically, undoDoorAction, doorRoles } from '../lib/door-preview.ts';
 import type { DoorAction, DoorEvent, DoorRole, Person } from '../lib/door-preview';
 
 let serial = 0;
@@ -70,4 +70,11 @@ test('refusal before admission has no decrement; undo preserves an immutable aud
   assert.equal(person.events[0].undoneBy?.staff, author.staff);
   const repeat = undoDoorAction(person, refusal.id, { ...author, staff: 'Different' });
   assert.equal(repeat.events[0].undoneBy?.staff, author.staff);
+});
+
+test('guest groups display A–Z without changing the stored order', () => {
+  const names = ['zoe', 'Álvaro', 'alice 10', 'Alice 2'];
+  const parties = names.map((name, index) => ({ id: String(index), name, group: 'Guestlist', host: 'PDA', people: [] }));
+  assert.deepEqual(sortPartiesAlphabetically(parties).map((party) => party.name), ['Alice 2', 'alice 10', 'Álvaro', 'zoe']);
+  assert.deepEqual(parties.map((party) => party.name), names);
 });

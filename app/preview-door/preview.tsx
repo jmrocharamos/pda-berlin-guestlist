@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react';
 import { ArrowDownLeft, ArrowUpRight, Ban, Check, ChevronRight, CircleHelp, ClipboardList, ImagePlus, MessageSquare, RotateCcw, Search, ShieldAlert, UserRound, Users, X } from 'lucide-react';
-import { admissionCount, applyDoorAction, doorRoles, personState, sampleParties, undoDoorAction, type BanRecord, type DoorAction, type DoorEvent, type DoorRole, type Party } from '../../lib/door-preview';
+import { admissionCount, applyDoorAction, doorRoles, personState, sampleParties, sortPartiesAlphabetically, undoDoorAction, type BanRecord, type DoorAction, type DoorEvent, type DoorRole, type Party } from '../../lib/door-preview';
 import { staffRoles, type StaffRole } from '../../lib/staff-roles';
 import { prepareDoorPhoto } from '../../lib/door-photo';
 import { canArchiveBan, changeBanArchive } from '../../lib/ban-archive';
@@ -111,7 +111,7 @@ export default function DoorPreview({ live }: { live?: { session: LiveSession; t
   const refused = people.filter((item) => personState(item).status === 'refused').length;
   const checks = people.reduce((count, item) => count + personState(item).checks.length, 0);
   const activeBan = bans.find((item) => item.id === banForm);
-  const visibleParties = parties.filter((party) => (group === 'All' || party.group === group) && `${party.name} ${party.group} ${party.host} ${party.note || ''}`.toLowerCase().includes(query.toLowerCase()));
+  const visibleParties = sortPartiesAlphabetically(parties.filter((party) => (group === 'All' || party.group === group) && `${party.name} ${party.group} ${party.host} ${party.note || ''}`.toLowerCase().includes(query.toLowerCase())));
   const visibleBans = bans.filter((entry) => Boolean(entry.archived) === (canManageBans && showArchived) && `${entry.name} ${entry.notes.map((item) => item.text).join(' ')}`.toLowerCase().includes(query.toLowerCase()));
 
   function openGuest(party: Party, personId = party.people[0].id) { setSelected({ partyId: party.id, personId }); setNote(''); setDecision(null); setUndoId(null); }
