@@ -24,6 +24,14 @@ export function guestFromLine(line: string, type: string): ImportedGuest | null 
   };
 }
 
+export function guestsFromLines(text: string, type: string): ImportedGuest[] {
+  return text.split(/\r?\n/)
+    .map((line) => line.trim().replace(/^[-•*]\s*/, ''))
+    .filter(Boolean)
+    .map((line) => guestFromLine(line, type))
+    .filter(Boolean) as ImportedGuest[];
+}
+
 export function parseDelimited(text: string, delimiter: string) {
   const rows: string[][] = [];
   let row: string[] = [];
