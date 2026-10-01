@@ -26,7 +26,8 @@
 .search-box input {color:var(--paper)}.search-box input::placeholder{color:var(--muted)}.search-box kbd{color:var(--muted);border-color:var(--line)}
 .filter-row {gap:6px;padding:10px 0}.filter-row button{padding:10px 14px;min-height:44px}.filter-row button.selected{background:var(--acid);color:var(--button-ink);border-bottom-color:transparent}
 .import-button,.import-summary,.empty-state {border-color:var(--line)}.empty-state{color:var(--muted)}
-.gate-card input,.modal-card input:not([type=checkbox]),.modal-card select {background:var(--ink);border-color:var(--line);color:var(--paper)}
+.gate-card input,.modal-card input:not([type=checkbox]),.modal-card select,.modal-card textarea.bulk-name-input {background:var(--ink);border-color:var(--line);color:var(--paper);caret-color:var(--acid);-webkit-text-fill-color:var(--paper)}
+.modal-card textarea.bulk-name-input::placeholder {color:var(--muted);opacity:1;-webkit-text-fill-color:var(--muted)}
 .import-mode button.selected,.form-success{background:var(--panel2);border-color:var(--acid)}
 .import-mode button.selected.danger,.settings-action.danger,.list-settings button {background:var(--panel2);border-color:var(--danger);color:var(--danger)}
 .import-mode button.selected.danger strong,.form-error{color:var(--danger)}.form-error{background:var(--panel2);border:1px solid var(--danger)}
